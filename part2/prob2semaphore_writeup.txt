@@ -1,0 +1,22 @@
+                Experiments using Semaphores
+___________________________________________________________________________
+|   N   N1    N2    N3    R   |   RESULTS                      |  TIME    |
+|  15    5     10    0    1   |    See results_s1.txt          |  0.016s  |
+|  15    5     5     5    2   |    See results_s2.txt          |  0.012s  |
+|  100   40    40    20   2   |    See results_s3.txt          |  0.021s  |
+|  100   10    80    10   3   |    See results_s4.txt          |  0.016s  |
+|  1000  200   600   200  2   |    See results_s5.txt          |  0.089s  |
+|  1000  200   600   200  3   |    See results_s6.txt          |  0.087s  |
+|_____________________________|________________________________|__________|                                                    
+
+Basically, if from the beginning there are more students than teachers, 
+such that the ratio is not met from the beginning. Then, when the parents come,
+they see that the compliance is not met. The program does not crash. It runs as expected.
+The teachers are unable to leave until students have left so the ratio is kept. 
+
+Also, a higher ratio results in the time being faster compared to a larger ratio.
+This can be seen directly in the results. The programs with a larger ratio run faster
+than those with a smaller ratio. 
+
+
+
