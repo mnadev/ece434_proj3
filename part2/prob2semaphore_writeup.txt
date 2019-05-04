@@ -18,5 +18,10 @@ Also, a higher ratio results in the time being faster compared to a larger ratio
 This can be seen directly in the results. The programs with a larger ratio run faster
 than those with a smaller ratio. 
 
+For the semaphore implementation, a deadlock does not occur because the children leave no matter what. 
+Once a lot of children leave, the teachers are free to leave. The parents don't wait. The parents just check
+if the ratio is met and leave no matter what. 
 
 
+For the semaphore implementation, I used my own semaphores. teacher_leave, teacher_exit and all of the other _leave and
+_exit functions work like up and down keeping track of the number of teachers, students and parents in the classroom. 
