@@ -1,0 +1,16 @@
+                Experiments using CVs
+________________________________________________________________
+|   N   N1    N2    N3    R   |   RESULTS                      |
+|  15    5     10    0    1   |    See results_s1_c.txt        |
+|  15    5     5     5    2   |    See results_s2_c.txt        |
+|  100   40    40    20   2   |    See results_s3_c.txt        |
+|  100   10    80    10   3   |    See results_s4_c.txt        |
+|  1000  200   600   200  2   |    See results_s5_c.txt        |
+|  1000  200   600   200  3   |    See results_s6_c.txt        |
+|_____________________________|________________________________|    
+
+In order to accomplish this a similar approach to semaphores was used.  The condition variable is used to signal to teachers if there is a change in the number of children in the classroom.
+The ratio and / or the amount of children is calculated and if the ratio is met and / or there are no children in the classroom, the teacher leaves.
+Any time there is a share variable being utilized, it is mutexed.  Times are omitted for this experiment because random sleeps are used in the program.  Two counters are also used to keep track of the amount of teachers and students (which are malloced).
+
+For the condition variable implementation, for results_s5 there was one deadlock that occured, and this is speculated to be because when waiting for the signal a deadlock occurs in between different locks causing an infinite wait for signal.  This is expected due to the amount of threads and context switching happening.
