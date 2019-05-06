@@ -13,7 +13,7 @@ help:
 	@echo "\tmake system - Build the $(DEMO) using the system pthreads implementation."
 
 ult: $(DEMO).c mypthread.c mypthread.h
-	$(CC) $(CFLAGS) $(DEMO).c mypthread.c -o $(DEMO)-ult
+	$(CC) $(CFLAGS) $(DEMO).c mypthread.c queue.c -o $(DEMO)-ult
 
 system: $(DEMO).c
 	$(CC) $(CFLAGS) $(DEMO).c -o $(DEMO)-system -pthread -include mypthread-system-override.h
