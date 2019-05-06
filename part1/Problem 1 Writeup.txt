@@ -1,0 +1,26 @@
+Problem 1 Writeup:
+	The first design decision that would need to be made was how to store all the threads in the system. Given that the project supplied
+	a queue(linked-list), it was decided to store all the threads that were created in this provided queue. Now that each mypthread_t is stored
+	in a list, the information that needed to be stored in the threadNode struct belonging to a mypthread_t struct was to be decided.
+	Each thread needed to have a context associated with it, a state indicating whether the thread was ready to be run, blocked, or terminated
+	and waiting to be joined, the parent thread that created a given thread, and return value. The threadState was put in an enum for
+	convenience purposes. In the enum, there are two READY states, namely STATE_READY and STATE_READY2. This was added in to ensure that all 
+	threads are equally scheduled, that is, when searching the queue for a thread that is ready to be run, the program checks all threads that
+	have the state STATE_READY first, and if no threads have that state, STATE_READY2 is searched.
+	Another design decision was to have the variable activeThreadID, which indicated the TID of the currently running context. This is 
+	switched whenever there is a context switch from swapcontext, and helps to access a currently running thread's mypthread_t struct.	
+
+	Next, discussing the overall functionality of the user thread library:
+	In mypthread_create, the first time mypthread_create is run, a thread representing main is created and stored in the threadQueue so that
+	once all threads have finished running, there's an available context to switch to. Next, for the thread to be created, we allocate
+	stack space, and set the uc_link field of the ucontext_t struct to the main thread's context, meaning that the program runs
+	the main context once the thread is finished executing. The thread is set to a ready state, and placed into the queue.
+	In mypthread_exit, we simply get the actively running thread, change the state to terminated, store a return value if there is one, 
+	and return to the "parent" thread of the thread that called pthread_exit.
+	In mypthread_yield, we search the thread queue for a thread that is ready to run, with state STATE_READY or STATE_READY2, again, to
+	ensure that all threads are scheduled equally. Initially, before this was added, when testing with mtsort, a single thread would 
+	run infinitely because searching through the queue returned the same ready thread every single time.
+	Lastly, in mypthread_join, we do a few things here. Because the project instructions state that one of the ways a thread yields to other
+	threads is in mypthread_join, when main calls mypthread_join, we swap contexts to the thread that was passed into the function and set
+	the calling thread, main, to be blocked so taht it isn't searched for in mypthread_yield. Otherwise, if mypthread_join was called 
+	on a thread that was already terminated, we immediately set the retval if there was one, and return.

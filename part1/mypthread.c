@@ -4,6 +4,7 @@
 
 typedef enum _threadState{
 	STATE_READY,
+	STATE_READY2,	//This state will be set when a thread has been examined from pthread_yield (needed to ensure equal scheduling of threads)
 	STATE_TERMINATED,
 	STATE_BLOCKED
 } threadState;
@@ -22,6 +23,7 @@ int mainThreadQueued = 0;	//Used to determine if the main thread has been placed
 short activeThreadID = 0;		//Global that indicates the threadID of the currently running thread (bookkeeping needed for swapping contexts)
 queue_t* threadQueue;	//Queue of all threads created.
 mypthread_t* mainThread;	//Setting this pointer as global for easier access to the mainThread.
+threadState stateToSearch = STATE_READY;
 
 // Type your own functions (void)
 // e.g., free up sets of data structures created in your library
@@ -73,6 +75,7 @@ int mypthread_create(mypthread_t *thread, const mypthread_attr_t *attr, void *(*
 	thread->mynode->threadContext->uc_stack.ss_size = sizeof(char)*16384;
 	thread->mynode->threadContext->uc_link = mainThread->mynode->threadContext;
 	thread->mynode->state = STATE_READY;
+	thread->mynode->callingThreadID = activeThreadID;
 	makecontext(thread->mynode->threadContext, (void(*)(void))start_routine, 1, arg);
 	qenqueue(threadQueue, (void*)thread);
 	return 0;
@@ -99,9 +102,15 @@ int mypthread_yield(void){
 	mypthread_t* activeThread;
 	qsearch(threadQueue, (void*)&activeThreadID, (void**)&activeThread, compareThreadIDs);	//Get active thread
 	mypthread_t* switchingThread;	//The thread we'll be yielding to.
-	threadState searching = STATE_READY;
+	threadState searching = stateToSearch;
 	qsearch(threadQueue, (void*)&searching, (void**)&switchingThread, compareThreadStates);
+	if(switchingThread == NULL){
+		stateToSearch = (stateToSearch == STATE_READY) ? STATE_READY2 : STATE_READY;
+		searching = stateToSearch;
+		qsearch(threadQueue, (void*)&searching, (void**)&switchingThread, compareThreadStates);
+	}
 	if(switchingThread->tid == activeThreadID){		//The thread we found is the same thread, we get to run again.
+		switchingThread->mynode->state = (stateToSearch == STATE_READY) ? STATE_READY2 : STATE_READY;	//Balancing thread scheduling
 		return 0;
 	} else{
 		activeThreadID = switchingThread->tid;
@@ -124,7 +133,6 @@ int mypthread_join(mypthread_t thread, void **retval){
 	}else{
 		activeThread->mynode->state = STATE_BLOCKED;	//Don't want pthread_yield to run this thread while it's waiting to join
 		
-		thread.mynode->callingThreadID = activeThreadID;
 		activeThreadID = thread.tid;	//The bookkeeping mentioned earlier. Need to keep track of current thread's ID.
 		thread.mynode->threadContext->uc_link = activeThread->mynode->threadContext;	//So context returns here when it's finished
 		swapcontext(activeThread->mynode->threadContext, thread.mynode->threadContext);
